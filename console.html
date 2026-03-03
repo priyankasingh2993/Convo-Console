@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convo — WhatsApp CRM for Indian SMBs</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #3B6CF4; --blue-light: #5B87FF; --blue-dim: rgba(59,108,244,0.12);
+  --midnight: #0F1117; --surface: #161B27; --surface2: #1E2535; --surface3: #242D42;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+  --text: #F0F4FF; --text2: #8A93B2; --text3: #555E7A;
+  --green: #25D366; --green-dim: rgba(37,211,102,0.12);
+  --red: #FF4D6D; --amber: #FFBE57; --purple: #8B5CF6;
+  --r: 12px; --rs: 8px; --sw: 220px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--midnight);color:var(--text);overflow:hidden}
+
+/* ── ONBOARDING ── */
+#ob{position:fixed;inset:0;z-index:100;background:var(--midnight);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.ob-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(120px);opacity:.16}
+.blob1{width:500px;height:500px;background:var(--blue);top:-150px;right:-80px;animation:bf 9s ease-in-out infinite}
+.blob2{width:380px;height:380px;background:#25D366;bottom:-80px;left:-60px;animation:bf 11s ease-in-out infinite reverse}
+@keyframes bf{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(25px,-18px) scale(1.04)}}
+
+.ob-logo{position:absolute;top:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:9px;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.3px}
+.ob-logo-mark{width:34px;height:34px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center}
+
+.ob-card{position:relative;z-index:1;width:100%;max-width:580px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:44px 48px 38px;box-shadow:0 40px 100px rgba(0,0,0,.55)}
+
+.ob-prog{display:flex;gap:6px;margin-bottom:38px}
+.ob-dot{height:3px;flex:1;border-radius:99px;background:var(--surface3);transition:background .35s}
+.ob-dot.active{background:var(--blue)}
+.ob-dot.done{background:var(--green)}
+
+.ob-step{display:none}
+.ob-step.on{display:block;animation:si .38s ease}
+@keyframes si{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.ob-tag{font-size:11px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--blue-light);margin-bottom:10px}
+.ob-q{font-family:'Sora',sans-serif;font-size:25px;font-weight:600;line-height:1.22;margin-bottom:7px;letter-spacing:-.45px}
+.ob-hint{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5}
+
+.ob-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:28px}
+.ob-opts.single{grid-template-columns:1fr}
+.ob-opt{padding:13px 15px;border-radius:var(--rs);border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;transition:all .18s;display:flex;align-items:flex-start;gap:11px;color:var(--text2)}
+.ob-opt:hover{border-color:var(--blue);color:var(--text);background:var(--blue-dim)}
+.ob-opt.sel{border-color:var(--blue);background:var(--blue-dim);color:var(--text)}
+.ob-opt-ico{font-size:19px;flex-shrink:0;margin-top:1px}
+.ob-opt-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.ob-opt-sub{font-size:11px;color:var(--text3)}
+
+.ob-row{display:flex;align-items:center;justify-content:space-between}
+.ob-cnt{font-size:12px;color:var(--text3)}
+.ob-btns{display:flex;gap:9px}
+.btn-back{padding:9px 18px;border-radius:var(--rs);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-back:hover{color:var(--text);background:var(--surface2)}
+.btn-next{padding:9px 26px;border-radius:var(--rs);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.35;pointer-events:none;transition:all .18s}
+.btn-next.on{opacity:1;pointer-events:all}
+.btn-next.on:hover{background:var(--blue-light);transform:translateY(-1px)}
+
+/* Loading */
+#ob-load{display:none;flex-direction:column;align-items:center;padding:52px 48px;text-align:center}
+#ob-load.on{display:flex;animation:si .3s ease}
+.load-ring{width:58px;height:58px;border-radius:50%;border:3px solid var(--surface3);border-top-color:var(--blue);animation:spin .75s linear infinite;margin-bottom:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-family:'Sora',sans-serif;font-size:19px;font-weight:600;margin-bottom:6px}
+.load-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.load-steps{width:100%;display:flex;flex-direction:column;gap:7px}
+.load-step{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--rs);background:var(--surface2);font-size:12px;color:var(--text2);opacity:0;transform:translateX(-6px);transition:all .35s ease}
+.load-step.show{opacity:1;transform:translateX(0)}
+.load-step.done{color:var(--green)}
+.load-step-ico{font-size:15px}
+
+/* First-Win Coach */
+#ob-coach{display:none;animation:si .4s ease}
+#ob-coach.on{display:block}
+.coach-header{margin-bottom:24px}
+.coach-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.coach-sub{font-size:13px;color:var(--text2);line-height:1.5}
+.coach-steps{display:flex;flex-direction:column;gap:10px}
+.coach-step{display:flex;align-items:flex-start;gap:13px;padding:14px 16px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);cursor:pointer;transition:all .18s}
+.coach-step:hover,.coach-step.active{border-color:var(--blue);background:var(--blue-dim)}
+.coach-step-num{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.coach-step.done .coach-step-num{background:var(--green)}
+.coach-step-info{flex:1}
+.coach-step-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.coach-step-desc{font-size:12px;color:var(--text2)}
+.coach-step-action{font-size:12px;font-weight:700;color:var(--blue-light);margin-top:6px;cursor:pointer}
+.coach-start-btn{margin-top:20px;width:100%;padding:12px;border-radius:var(--rs);background:var(--blue);color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
+.coach-start-btn:hover{background:var(--blue-light)}
+
+/* ── APP ── */
+#app{display:none;height:100vh;flex-direction:row}
+#app.on{display:flex;animation:ar .5s ease}
+@keyframes ar{from{opacity:0}to{opacity:1}}
+
+/* Sidebar */
+.sb{width:var(--sw);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sb-logo{padding:18px 14px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border)}
+.sb-mark{width:30px;height:30px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-name{font-family:'Sora',sans-serif;font-weight:700;font-size:16px;letter-spacing:-.3px}
+.sb-ws{margin:10px 9px;padding:7px 9px;border-radius:var(--rs);background:var(--surface2);cursor:pointer;display:flex;align-items:center;gap:7px}
+.sb-ws-av{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,var(--blue),#7B5EA7);font-size:10px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-ws-name{font-size:11px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-nav{flex:1;padding:6px 9px;overflow-y:auto}
+.sb-section{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:12px 8px 5px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--rs);cursor:pointer;transition:all .13s;margin-bottom:1px}
+.ni:hover{background:var(--surface2)}
+.ni.active{background:var(--blue-dim)}
+.ni.active .ni-label{color:var(--blue-light)}
+.ni-ico{font-size:15px;flex-shrink:0;width:18px;text-align:center}
+.ni-label{font-size:12px;font-weight:500;color:var(--text2)}
+.ni-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;min-width:18px;text-align:center}
+.ni-badge.g{background:var(--green)}
+.ni-badge.r{background:var(--red)}
+.sb-bottom{border-top:1px solid var(--border);padding:10px 9px}
+.sb-user{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:var(--rs);cursor:pointer}
+.sb-user:hover{background:var(--surface2)}
+.sb-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#9B59B6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:11px;font-weight:600}
+.sb-user-role{font-size:10px;color:var(--text3)}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid var(--surface);flex-shrink:0}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* Topbar */
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:14px;flex-shrink:0}
+.topbar-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;letter-spacing:-.3px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{padding:6px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;transition:all .13s;font-family:'DM Sans',sans-serif;border:none}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:var(--blue-light)}
+.btn-g{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-g:hover{color:var(--text);background:var(--surface2)}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:5px 11px;flex:1;max-width:260px}
+.search-box input{background:transparent;border:none;outline:none;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%}
+.search-box input::placeholder{color:var(--text3)}
+
+/* ══ INBOX ══ */
+.inbox-wrap{display:flex;flex:1;overflow:hidden}
+.convo-list{width:290px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.convo-tabs{display:flex;padding:10px 10px 0;gap:3px;border-bottom:1px solid var(--border)}
+.ctab{padding:6px 11px;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:4px 4px 0 0;transition:all .18s}
+.ctab.active{color:var(--blue-light);border-bottom-color:var(--blue)}
+.convos{flex:1;overflow-y:auto}
+.ci{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .13s;display:flex;gap:9px}
+.ci:hover{background:var(--surface2)}
+.ci.active{background:var(--blue-dim)}
+.ci-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.ci-meta{flex:1;min-width:0}
+.ci-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ci-name{font-size:12px;font-weight:600}
+.ci-time{font-size:10px;color:var(--text3)}
+.ci-prev{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-bot{display:flex;align-items:center;justify-content:space-between;margin-top:3px}
+.tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px}
+.tag-hot{background:rgba(255,77,109,.15);color:var(--red)}
+.tag-lead{background:rgba(255,190,87,.15);color:var(--amber)}
+.tag-sup{background:rgba(59,108,244,.15);color:var(--blue-light)}
+.tag-done{background:rgba(138,147,178,.1);color:var(--text3)}
+.tag-new{background:rgba(37,211,102,.15);color:var(--green)}
+.unread{width:17px;height:17px;border-radius:50%;background:var(--blue);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* Chat panel */
+.chat{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-hdr{padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;flex-shrink:0}
+.chat-hdr-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.chat-hdr-info{flex:1}
+.chat-hdr-name{font-size:13px;font-weight:600}
+.chat-hdr-sub{font-size:11px;color:var(--text2)}
+.chat-hdr-acts{display:flex;gap:6px}
+.ico-btn{width:30px;height:30px;border-radius:var(--rs);border:1px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .13s}
+.ico-btn:hover{background:var(--surface2)}
+.messages{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;flex-direction:column;max-width:70%}
+.msg.out{align-self:flex-end;align-items:flex-end}
+.msg.in{align-self:flex-start}
+.msg-bubble{padding:9px 13px;border-radius:13px;font-size:12px;line-height:1.55}
+.msg.in .msg-bubble{background:var(--surface2);border-bottom-left-radius:3px}
+.msg.out .msg-bubble{background:var(--blue);color:#fff;border-bottom-right-radius:3px}
+.msg-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.date-div{text-align:center;font-size:10px;color:var(--text3);margin:6px 0}
+.ai-strip{margin:0 18px 10px;padding:9px 13px;border-radius:var(--rs);background:var(--blue-dim);border:1px solid rgba(59,108,244,.22);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.ai-strip-txt{font-size:11px;color:var(--text2);flex:1;line-height:1.45}
+.ai-strip-txt strong{color:var(--blue-light)}
+.ai-use{font-size:11px;font-weight:700;color:var(--blue-light);cursor:pointer;white-space:nowrap}
+.ai-use:hover{text-decoration:underline}
+.chat-footer{border-top:1px solid var(--border);padding:10px 18px;flex-shrink:0;display:flex;flex-direction:column;gap:7px}
+.chat-tools{display:flex;gap:5px}
+.tool{font-size:13px;cursor:pointer;color:var(--text3);padding:3px;border-radius:4px;transition:color .13s}
+.tool:hover{color:var(--text2)}
+.chat-input-row{display:flex;align-items:center;gap:8px}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:8px 14px;font-size:12px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;resize:none}
+.chat-input::placeholder{color:var(--text3)}
+.send-btn{width:34px;height:34px;border-radius:50%;background:var(--blue);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .13s}
+.send-btn:hover{background:var(--blue-light);transform:scale(1.05)}
+
+/* Contact sidebar */
+.cs{width:250px;flex-shrink:0;border-left:1px solid var(--border);overflow-y:auto;padding:14px}
+.cs-sec{margin-bottom:18px}
+.cs-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:9px}
+.cs-field{margin-bottom:8px}
+.cs-label{font-size:10px;color:var(--text3);margin-bottom:2px}
+.cs-val{font-size:12px;color:var(--text);font-weight:500}
+.cs-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.cs-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--surface3);color:var(--text2)}
+.fas-card{background:linear-gradient(135deg,var(--blue-dim),rgba(37,211,102,.06));border:1px solid var(--border2);border-radius:var(--rs);padding:11px}
+.fas-num{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:var(--blue-light)}
+.fas-level{display:inline-flex;align-items:center;gap:4px;margin-bottom:4px}
+.fas-lbl{font-size:10px;color:var(--text2);margin-top:2px}
+.fas-bar{height:4px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-top:7px}
+.fas-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.stage-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:700}
+.s-new{background:rgba(37,211,102,.15);color:var(--green)}
+.s-contacted{background:rgba(59,108,244,.15);color:var(--blue-light)}
+.s-qualified{background:rgba(255,190,87,.15);color:var(--amber)}
+.s-converted{background:rgba(139,92,246,.15);color:var(--purple)}
+
+/* ══ BROADCAST ══ */
+.bc-wrap{flex:1;overflow-y:auto;padding:22px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:22px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.stat-val{font-family:'Sora',sans-serif;font-size:26px;font-weight:700}
+.stat-chg{font-size:11px;margin-top:3px}
+.chg-up{color:var(--green)}.chg-dn{color:var(--red)}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:'Sora',sans-serif;font-size:15px;font-weight:600}
+.filters{display:flex;gap:6px}
+.chip{padding:4px 11px;border-radius:99px;border:1px solid var(--border2);background:var(--surface2);font-size:11px;color:var(--text2);cursor:pointer;transition:all .13s}
+.chip.active,.chip:hover{border-color:var(--blue);color:var(--blue-light);background:var(--blue-dim)}
+.camp-list{display:flex;flex-direction:column;gap:9px}
+.camp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s}
+.camp:hover{border-color:var(--border2)}
+.camp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-live{background:var(--green);box-shadow:0 0 7px var(--green);animation:pu 2s ease-in-out infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.5}}
+.dot-done{background:var(--text3)}.dot-draft{background:var(--amber)}
+.camp-info{flex:1;min-width:0}
+.camp-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.camp-meta{font-size:11px;color:var(--text2)}
+.camp-metrics{display:flex;gap:18px}
+.camp-m{text-align:center}
+.camp-mv{font-size:15px;font-weight:700}
+.camp-ml{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+
+/* Campaign Builder Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.on{display:flex;animation:si .25s ease}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:18px;width:600px;max-width:90vw;max-height:80vh;overflow-y:auto;padding:28px}
+.modal-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:22px}
+.modal-close{position:absolute;top:16px;right:16px;font-size:18px;cursor:pointer;color:var(--text2)}
+.modal-steps{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.m-step{padding:8px 16px;font-size:12px;font-weight:600;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.m-step.active{color:var(--blue-light);border-bottom-color:var(--blue)}
+.m-step.done{color:var(--green)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.7px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:9px 12px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
+.form-textarea{min-height:80px;resize:vertical}
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.template-card{padding:12px;border-radius:var(--rs);border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;transition:all .15s}
+.template-card:hover,.template-card.sel{border-color:var(--blue);background:var(--blue-dim)}
+.template-card-name{font-size:12px;font-weight:600;margin-bottom:3px}
+.template-card-prev{font-size:11px;color:var(--text2);line-height:1.4}
+.seg-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.seg-chip{padding:5px 12px;border-radius:99px;border:1px solid var(--border2);background:var(--surface2);font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s}
+.seg-chip.sel{border-color:var(--blue);color:var(--blue-light);background:var(--blue-dim)}
+.camp-preview{background:var(--midnight);border-radius:var(--rs);padding:14px;border:1px solid var(--border)}
+.wa-preview{background:#1a2634;border-radius:10px;padding:12px;font-size:12px;line-height:1.6;position:relative;margin-bottom:8px}
+.wa-preview::after{content:'';position:absolute;bottom:-6px;left:14px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1a2634}
+.wa-preview-meta{font-size:10px;color:var(--text3);text-align:right;margin-top:4px}
+.modal-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ══ CONTACTS ══ */
+.ct-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.ct-toolbar{padding:12px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ct-table-wrap{flex:1;overflow-y:auto;padding:0 22px 22px}
+.ct-table{width:100%;border-collapse:collapse;margin-top:14px}
+.ct-table th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:7px 11px;border-bottom:1px solid var(--border)}
+.ct-table td{padding:10px 11px;border-bottom:1px solid var(--border);font-size:12px}
+.ct-table tr:hover td{background:var(--surface2)}
+.ct-name-cell{display:flex;align-items:center;gap:8px}
+.ct-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ct-name{font-weight:600}
+.ct-ph{color:var(--text2)}
+.fas-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700}
+.fp-hi{background:rgba(37,211,102,.15);color:var(--green)}
+.fp-md{background:rgba(59,108,244,.15);color:var(--blue-light)}
+.fp-lo{background:rgba(255,77,109,.12);color:var(--red)}
+
+/* ══ FLOWS ══ */
+.flows-wrap{flex:1;display:flex;overflow:hidden}
+.flows-sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);padding:14px;overflow-y:auto}
+.flows-sidebar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px}
+.flow-node-type{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);cursor:grab;margin-bottom:6px;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s}
+.flow-node-type:hover{border-color:var(--blue);color:var(--text);background:var(--blue-dim)}
+.flow-node-ico{font-size:15px}
+.flow-canvas{flex:1;position:relative;overflow:hidden;background:var(--midnight);background-image:radial-gradient(var(--surface3) 1px, transparent 1px);background-size:24px 24px}
+.flow-toolbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:99px;padding:5px 8px;z-index:10}
+.flow-tool-btn{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .13s}
+.flow-tool-btn:hover,.flow-tool-btn.active{background:var(--blue);color:#fff}
+/* Flow nodes on canvas */
+.fnode{position:absolute;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;min-width:160px;cursor:move;box-shadow:0 4px 16px rgba(0,0,0,.35);transition:border-color .15s}
+.fnode:hover{border-color:var(--blue)}
+.fnode-hdr{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.fnode-ico{font-size:14px}
+.fnode-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3)}
+.fnode-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.fnode-sub{font-size:10px;color:var(--text2)}
+.fnode.trigger{border-color:var(--green);border-width:2px}
+.fnode.action{border-color:var(--blue)}
+.fnode.condition{border-color:var(--amber)}
+.fnode.end-node{border-color:var(--red)}
+.fnode-dot{width:10px;height:10px;border-radius:50%;border:2px solid;position:absolute}
+.fnode-dot.out{bottom:-5px;left:50%;transform:translateX(-50%);background:var(--midnight);border-color:var(--text3)}
+.fnode-dot.in{top:-5px;left:50%;transform:translateX(-50%);background:var(--midnight);border-color:var(--text3)}
+/* SVG connector lines */
+.flow-svg{position:absolute;inset:0;pointer-events:none;z-index:1}
+.flow-svg path{fill:none;stroke:var(--text3);stroke-width:1.5;stroke-dasharray:4 3}
+
+/* ══ FAS DASHBOARD ══ */
+.fas-wrap{flex:1;overflow-y:auto;padding:22px}
+.fas-hero{background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border2);border-radius:var(--r);padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:28px}
+.fas-hero-score{text-align:center;flex-shrink:0}
+.fas-big-num{font-family:'Sora',sans-serif;font-size:64px;font-weight:700;background:linear-gradient(135deg,var(--blue-light),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.fas-hero-level{font-size:13px;font-weight:600;margin-top:6px}
+.fas-hero-bar{height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-top:8px;width:120px}
+.fas-hero-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:99px}
+.fas-hero-info{flex:1}
+.fas-hero-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px}
+.fas-hero-sub{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px}
+.fas-levels{display:flex;gap:8px}
+.fas-level-item{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--border2);color:var(--text3)}
+.fas-level-item.current{background:var(--blue-dim);color:var(--blue-light);border-color:var(--blue)}
+.fas-level-item.done{background:var(--green-dim);color:var(--green);border-color:var(--green)}
+
+.fas-features{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.fas-feat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.fas-feat:hover{border-color:var(--border2);transform:translateY(-1px)}
+.fas-feat.active{border-color:var(--green)}
+.fas-feat.active::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--green);font-size:13px;font-weight:700}
+.fas-feat-ico{font-size:20px;margin-bottom:8px}
+.fas-feat-name{font-size:12px;font-weight:600;margin-bottom:3px}
+.fas-feat-impact{font-size:11px;color:var(--text3)}
+.fas-feat.active .fas-feat-impact{color:var(--green)}
+.fas-feat-cta{font-size:11px;font-weight:700;color:var(--blue-light);margin-top:6px}
+
+/* ══ PIPELINE ══ */
+.pipeline-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.pipeline-board{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;gap:14px;padding:18px 22px}
+.pipeline-col{min-width:220px;width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.pipeline-col-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.pipeline-col-name{font-size:12px;font-weight:700;color:var(--text2)}
+.pipeline-col-count{background:var(--surface3);color:var(--text3);font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px;cursor:pointer;transition:all .15s}
+.lead-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.lead-card-name{font-size:12px;font-weight:600;margin-bottom:4px}
+.lead-card-detail{font-size:11px;color:var(--text2);margin-bottom:6px}
+.lead-card-bottom{display:flex;align-items:center;justify-content:space-between}
+.lead-card-time{font-size:10px;color:var(--text3)}
+.lead-card-agent{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7B5EA7);font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center}
+
+/* ══ CTWA ══ */
+.ctwa-wrap{flex:1;overflow-y:auto;padding:22px}
+.ctwa-hero{background:linear-gradient(135deg,rgba(59,108,244,.15),rgba(37,211,102,.08));border:1px solid var(--border2);border-radius:var(--r);padding:22px;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.ctwa-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:20px}
+.ctwa-ad-list{display:flex;flex-direction:column;gap:9px}
+.ctwa-ad{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:15px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s}
+.ctwa-ad:hover{border-color:var(--border2)}
+.ctwa-ad-thumb{width:44px;height:44px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ctwa-ad-info{flex:1}
+.ctwa-ad-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.ctwa-ad-meta{font-size:11px;color:var(--text2)}
+.ctwa-funnel{display:flex;align-items:center;gap:4px}
+.ctwa-funnel-step{text-align:center}
+.ctwa-funnel-val{font-size:14px;font-weight:700}
+.ctwa-funnel-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+.ctwa-arrow{color:var(--text3);font-size:12px}
+
+/* ══ ANALYTICS ══ */
+.an-wrap{flex:1;overflow-y:auto;padding:22px}
+.an-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.chart-title{font-family:'Sora',sans-serif;font-size:13px;font-weight:600;margin-bottom:3px}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:18px}
+.bars{display:flex;align-items:flex-end;gap:5px;height:110px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.bar{width:100%;border-radius:3px 3px 0 0;cursor:pointer;min-height:3px}
+.bar:hover{opacity:.8}
+.bar-lbl{font-size:9px;color:var(--text3)}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0}
+.donut-legend{margin-top:14px;display:flex;flex-direction:column;gap:7px;width:100%}
+.donut-item{display:flex;align-items:center;gap:7px;font-size:11px}
+.donut-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.donut-lbl{flex:1;color:var(--text2)}
+.donut-val{font-weight:600}
+
+/* ══ PLAYBOOKS ══ */
+.pb-wrap{flex:1;overflow-y:auto;padding:22px}
+.pb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.pb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.pb-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.pb-card.active-pb{border-color:var(--green)}
+.pb-card.active-pb::after{content:'✓ Active';position:absolute;top:10px;right:10px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px}
+.pb-ico{font-size:26px;margin-bottom:10px}
+.pb-name{font-family:'Sora',sans-serif;font-size:13px;font-weight:600;margin-bottom:3px}
+.pb-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.pb-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.pb-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--text3)}
+.auto-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px 15px;margin-bottom:7px;display:flex;align-items:center;gap:12px}
+.auto-ico{font-size:16px}
+.auto-info{flex:1}
+.auto-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.auto-desc{font-size:11px;color:var(--text2)}
+.toggle{width:34px;height:18px;border-radius:99px;position:relative;cursor:pointer;transition:background .18s;flex-shrink:0}
+.toggle.on{background:var(--blue)}.toggle.off{background:var(--surface3)}
+.toggle-k{position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .18s}
+.toggle.on .toggle-k{left:18px}.toggle.off .toggle-k{left:2px}
+
+/* ══ SETTINGS ══ */
+.set-wrap{flex:1;display:flex;overflow:hidden}
+.set-sb{width:190px;flex-shrink:0;border-right:1px solid var(--border);padding:14px 10px}
+.set-ni{padding:7px 11px;border-radius:var(--rs);cursor:pointer;font-size:12px;color:var(--text2);transition:all .13s;margin-bottom:2px}
+.set-ni:hover{background:var(--surface2);color:var(--text)}
+.set-ni.active{background:var(--blue-dim);color:var(--blue-light);font-weight:600}
+.set-content{flex:1;overflow-y:auto;padding:22px}
+.set-sec{margin-bottom:28px}
+.set-sec-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.set-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.set-row-info{flex:1}
+.set-row-label{font-size:12px;font-weight:600;margin-bottom:2px}
+.set-row-desc{font-size:11px;color:var(--text2)}
+.wa-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.wa-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.plan-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.plan-card.curr{border-color:var(--blue)}
+.plan-card.curr::before{content:'Current';position:absolute;top:0;right:0;background:var(--blue);color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-bottom-left-radius:8px}
+.plan-name{font-family:'Sora',sans-serif;font-size:16px;font-weight:700}
+.plan-price{font-size:24px;font-weight:700;margin:5px 0}
+.plan-price span{font-size:13px;font-weight:400;color:var(--text2)}
+.plan-feats{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.plan-feat{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px}
+.plan-feat::before{content:'✓';color:var(--green);font-weight:700;font-size:10px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px}
+
+/* Responsive */
+@media(max-width:900px){
+  .sb{width:52px}
+  .sb-name,.ni-label,.sb-ws-name,.sb-user-info,.sb-section{display:none}
+  .sb-ws{justify-content:center;padding:7px}
+  .ni{justify-content:center;padding:9px}
+  .sb-user{justify-content:center;padding:9px}
+  .cs{display:none}
+  .stats-grid,.ctwa-stats{grid-template-columns:1fr 1fr}
+  .pb-grid,.fas-features{grid-template-columns:1fr 1fr}
+  .an-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ ONBOARDING ══════════ -->
+<div id="ob">
+  <div class="ob-bg"><div class="blob blob1"></div><div class="blob blob2"></div></div>
+  <div class="ob-logo">
+    <div class="ob-logo-mark">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.82.487 3.53 1.338 5L2 22l5.2-1.3A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#fff"/></svg>
+    </div>Convo
+  </div>
+
+  <div class="ob-card">
+    <div class="ob-prog">
+      <div class="ob-dot" id="d1"></div><div class="ob-dot" id="d2"></div>
+      <div class="ob-dot" id="d3"></div><div class="ob-dot" id="d4"></div>
+    </div>
+
+    <!-- Q1: Industry -->
+    <div class="ob-step" id="s1">
+      <div class="ob-tag">Step 1 of 4</div>
+      <div class="ob-q">What industry are you in?</div>
+      <div class="ob-hint">We'll load the right playbook, templates, and flows for your business.</div>
+      <div class="ob-opts">
+        <div class="ob-opt" data-v="realestate" onclick="pick(this,1)"><span class="ob-opt-ico">🏠</span><div><div class="ob-opt-name">Real Estate</div><div class="ob-opt-sub">Brokers & developers</div></div></div>
+        <div class="ob-opt" data-v="d2c" onclick="pick(this,1)"><span class="ob-opt-ico">📦</span><div><div class="ob-opt-name">D2C / E-commerce</div><div class="ob-opt-sub">Product & retail brands</div></div></div>
+        <div class="ob-opt" data-v="education" onclick="pick(this,1)"><span class="ob-opt-ico">🎓</span><div><div class="ob-opt-name">Education & Coaching</div><div class="ob-opt-sub">Institutes & online coaches</div></div></div>
+        <div class="ob-opt" data-v="healthcare" onclick="pick(this,1)"><span class="ob-opt-ico">🏥</span><div><div class="ob-opt-name">Healthcare</div><div class="ob-opt-sub">Clinics & wellness</div></div></div>
+        <div class="ob-opt" data-v="fnb" onclick="pick(this,1)"><span class="ob-opt-ico">🍽️</span><div><div class="ob-opt-name">F&B</div><div class="ob-opt-sub">Restaurants & cloud kitchens</div></div></div>
+        <div class="ob-opt" data-v="other" onclick="pick(this,1)"><span class="ob-opt-ico">🏢</span><div><div class="ob-opt-name">Other</div><div class="ob-opt-sub">Finance, travel & more</div></div></div>
+      </div>
+      <div class="ob-row"><div class="ob-cnt">1 / 4</div><div class="ob-btns"><button class="btn-next" id="n1" onclick="next(1)">Continue →</button></div></div>
+    </div>
+
+    <!-- Q2: Goal (drives first-win flow) -->
+    <div class="ob-step" id="s2">
+      <div class="ob-tag">Step 2 of 4</div>
+      <div class="ob-q">What do you want from WhatsApp?</div>
+      <div class="ob-hint">This sets your primary workspace mode and activates the most relevant features from day one.</div>
+      <div class="ob-opts single">
+        <div class="ob-opt" data-v="sales" onclick="pick(this,2)"><span class="ob-opt-ico">🎯</span><div><div class="ob-opt-name">Generate & convert more leads</div><div class="ob-opt-sub">Sales mode — lead qualification, follow-ups, pipeline tracking</div></div></div>
+        <div class="ob-opt" data-v="marketing" onclick="pick(this,2)"><span class="ob-opt-ico">📣</span><div><div class="ob-opt-name">Market to existing customers</div><div class="ob-opt-sub">Marketing mode — broadcasts, drip campaigns, re-engagement</div></div></div>
+        <div class="ob-opt" data-v="support" onclick="pick(this,2)"><span class="ob-opt-ico">💬</span><div><div class="ob-opt-name">Provide faster customer support</div><div class="ob-opt-sub">Support mode — shared inbox, auto-replies, agent routing</div></div></div>
+        <div class="ob-opt" data-v="commerce" onclick="pick(this,2)"><span class="ob-opt-ico">💳</span><div><div class="ob-opt-name">Take orders & collect payments</div><div class="ob-opt-sub">Commerce mode — catalogue, UPI links, order management</div></div></div>
+        <div class="ob-opt" data-v="all" onclick="pick(this,2)"><span class="ob-opt-ico">✨</span><div><div class="ob-opt-name">All of the above</div><div class="ob-opt-sub">Full platform — we'll activate everything, Sales first</div></div></div>
+      </div>
+      <div class="ob-row"><div class="ob-cnt">2 / 4</div><div class="ob-btns"><button class="btn-back" onclick="back(2)">← Back</button><button class="btn-next" id="n2" onclick="next(2)">Continue →</button></div></div>
+    </div>
+
+    <!-- Q3: Team size -->
+    <div class="ob-step" id="s3">
+      <div class="ob-tag">Step 3 of 4</div>
+      <div class="ob-q">How many people will use Convo?</div>
+      <div class="ob-hint">We'll recommend the right plan and pre-configure your agent seats.</div>
+      <div class="ob-opts">
+        <div class="ob-opt" data-v="solo" onclick="pick(this,3)"><span class="ob-opt-ico">🧑</span><div><div class="ob-opt-name">Just me</div><div class="ob-opt-sub">Solo founder or agent</div></div></div>
+        <div class="ob-opt" data-v="small" onclick="pick(this,3)"><span class="ob-opt-ico">👥</span><div><div class="ob-opt-name">2 – 5</div><div class="ob-opt-sub">Small team</div></div></div>
+        <div class="ob-opt" data-v="medium" onclick="pick(this,3)"><span class="ob-opt-ico">🏢</span><div><div class="ob-opt-name">6 – 20</div><div class="ob-opt-sub">Growing team</div></div></div>
+        <div class="ob-opt" data-v="large" onclick="pick(this,3)"><span class="ob-opt-ico">🏗️</span><div><div class="ob-opt-name">20+</div><div class="ob-opt-sub">Large or enterprise</div></div></div>
+      </div>
+      <div class="ob-row"><div class="ob-cnt">3 / 4</div><div class="ob-btns"><button class="btn-back" onclick="back(3)">← Back</button><button class="btn-next" id="n3" onclick="next(3)">Continue →</button></div></div>
+    </div>
+
+    <!-- Q4: Current tool (switcher detection) -->
+    <div class="ob-step" id="s4">
+      <div class="ob-tag">Step 4 of 4</div>
+      <div class="ob-q">Are you currently using any WhatsApp tool?</div>
+      <div class="ob-hint">If you're switching, we'll migrate your contacts, templates, and flows for free.</div>
+      <div class="ob-opts">
+        <div class="ob-opt" data-v="fresh" onclick="pick(this,4)"><span class="ob-opt-ico">✨</span><div><div class="ob-opt-name">No, starting fresh</div><div class="ob-opt-sub">First time using WhatsApp API</div></div></div>
+        <div class="ob-opt" data-v="switcher" onclick="pick(this,4);showSwitcherPicker()"><span class="ob-opt-ico">🔄</span><div><div class="ob-opt-name">Yes, I'm switching</div><div class="ob-opt-sub" id="switcher-sub">Wati · Interakt · AiSensy · Gallabox · Other — free migration</div></div></div>
+      </div>
+      <!-- Switcher sub-picker (hidden until "Yes switching" selected) -->
+      <div id="switcher-picker" style="display:none;margin-top:10px;margin-bottom:18px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:500">Which tool are you switching from?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <div class="chip" onclick="setSwitcher(this,'wati')">Wati</div>
+          <div class="chip" onclick="setSwitcher(this,'interakt')">Interakt</div>
+          <div class="chip" onclick="setSwitcher(this,'aisensy')">AiSensy</div>
+          <div class="chip" onclick="setSwitcher(this,'gallabox')">Gallabox</div>
+          <div class="chip" onclick="setSwitcher(this,'other')">Other</div>
+        </div>
+      </div>
+      <div class="ob-row"><div class="ob-cnt">4 / 4</div><div class="ob-btns"><button class="btn-back" onclick="back(4)">← Back</button><button class="btn-next" id="n4" onclick="startLoad()">Set up my workspace →</button></div></div>
+    </div>
+
+    <!-- Loading -->
+    <div id="ob-load">
+      <div class="load-ring"></div>
+      <div class="load-title">Setting up your workspace…</div>
+      <div class="load-sub">Personalising everything for you</div>
+      <div class="load-steps">
+        <div class="load-step" id="ls1"><span class="load-step-ico">🏠</span><span id="ls1-txt">Activating Real Estate playbook</span></div>
+        <div class="load-step" id="ls2"><span class="load-step-ico">🤖</span><span id="ls2-txt">Configuring Hinglish AI model</span></div>
+        <div class="load-step" id="ls3"><span class="load-step-ico">📋</span><span id="ls3-txt">Loading lead-qualification templates</span></div>
+        <div class="load-step" id="ls4"><span class="load-step-ico">✅</span>Workspace ready!</div>
+      </div>
+    </div>
+
+    <!-- First-Win Coach -->
+    <div id="ob-coach">
+      <div class="coach-header">
+        <div class="coach-title">Your first win in 5 minutes 🚀</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:5px;line-height:1.5">You have <strong style="color:var(--text)">47 uncontacted leads</strong> from last week. Here's how to reach all of them in the next 5 minutes.</div>
+      </div>
+      <div class="coach-steps">
+        <div class="coach-step active" id="cs1">
+          <div class="coach-step-num">1</div>
+          <div class="coach-step-info">
+            <div class="coach-step-title">Send your first broadcast</div>
+            <div class="coach-step-desc">A lead follow-up template is ready. Review and send to 47 contacts in one click.</div>
+            <div class="coach-step-action" onclick="goAppFromCoach()">Send broadcast → </div>
+          </div>
+        </div>
+        <div class="coach-step" id="cs2">
+          <div class="coach-step-num">2</div>
+          <div class="coach-step-info">
+            <div class="coach-step-title">Set up your AI auto-reply</div>
+            <div class="coach-step-desc">When leads reply, AI qualifies them automatically in Hinglish.</div>
+            <div class="coach-step-action">Activate AI →</div>
+          </div>
+        </div>
+        <div class="coach-step" id="cs3">
+          <div class="coach-step-num">3</div>
+          <div class="coach-step-info">
+            <div class="coach-step-title">Connect your WhatsApp number</div>
+            <div class="coach-step-desc">Takes 2 minutes. Direct Meta Cloud API — no BSP needed.</div>
+            <div class="coach-step-action">Connect number →</div>
+          </div>
+        </div>
+      </div>
+      <button class="coach-start-btn" onclick="goAppFromCoach()">Go to my dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sb">
+    <div class="sb-logo">
+      <div class="sb-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.82.487 3.53 1.338 5L2 22l5.2-1.3A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#fff"/></svg></div>
+      <span class="sb-name">Convo</span>
+    </div>
+    <div class="sb-ws"><div class="sb-ws-av">RJ</div><div class="sb-ws-name">Rajan's Workspace</div></div>
+    <div class="sb-nav">
+      <div class="ni active" onclick="go('inbox')"><div class="ni-ico">💬</div><div class="ni-label">Inbox</div><div class="ni-badge">12</div></div>
+      <div class="ni" onclick="go('broadcast')"><div class="ni-ico">📣</div><div class="ni-label">Broadcast</div></div>
+      <div class="ni" onclick="go('contacts')"><div class="ni-ico">👥</div><div class="ni-label">Contacts</div></div>
+      <div class="ni" onclick="go('pipeline')"><div class="ni-ico">📊</div><div class="ni-label">Pipeline</div></div>
+      <div class="ni" onclick="go('ctwa')"><div class="ni-ico">📱</div><div class="ni-label">Ads (CTWA)</div><div class="ni-badge r">3</div></div>
+      <div class="sb-section">Automate</div>
+      <div class="ni" onclick="go('flows')"><div class="ni-ico">⚡</div><div class="ni-label">Flow Builder</div></div>
+      <div class="ni" onclick="go('playbooks')"><div class="ni-ico">🎯</div><div class="ni-label">Playbooks</div><div class="ni-badge g">1</div></div>
+      <div class="sb-section">Measure</div>
+      <div class="ni" onclick="go('analytics')"><div class="ni-ico">📈</div><div class="ni-label">Analytics</div></div>
+      <div class="ni" onclick="go('fas')"><div class="ni-ico">⭐</div><div class="ni-label">FAS Score</div></div>
+      <div class="sb-section">Account</div>
+      <div class="ni" onclick="go('settings')"><div class="ni-ico">⚙️</div><div class="ni-label">Settings</div></div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-user"><div class="sb-av">R</div><div class="sb-user-info"><div class="sb-user-name">Rajan</div><div class="sb-user-role">Admin · Growth Plan</div></div><div class="online-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <div class="main">
+
+    <!-- ── INBOX ── -->
+    <div class="screen active" id="sc-inbox">
+      <div class="inbox-wrap">
+        <div class="convo-list">
+          <div class="convo-tabs">
+            <div class="ctab active">All (12)</div>
+            <div class="ctab">Mine (4)</div>
+            <div class="ctab">Bot</div>
+          </div>
+          <div class="convos">
+            <div class="ci active" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#3B6CF4,#7B5EA7)">AM</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Amit Mehta</span><span class="ci-time">2m</span></div><div class="ci-prev">Bhai 2BHK Thane mein 85L budget...</div><div class="ci-bot"><span class="tag tag-hot">🔥 Hot Lead</span><span class="unread">3</span></div></div></div>
+            <div class="ci" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#25D366,#1A9E4A)">PR</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Priya Rao</span><span class="ci-time">18m</span></div><div class="ci-prev">Order #4521 kab deliver hoga?</div><div class="ci-bot"><span class="tag tag-sup">Support</span></div></div></div>
+            <div class="ci" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#FF6B6B,#C94040)">SK</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Suresh Kumar</span><span class="ci-time">1h</span></div><div class="ci-prev">JEE prep ke liye best batch?</div><div class="ci-bot"><span class="tag tag-lead">Lead</span><span class="unread">1</span></div></div></div>
+            <div class="ci" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#FFBE57,#E8960A)">NJ</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Neha Joshi</span><span class="ci-time">2h</span></div><div class="ci-prev">Plot near highway interested</div><div class="ci-bot"><span class="tag tag-lead">Lead</span></div></div></div>
+            <div class="ci" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)">RG</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Rohit Gupta</span><span class="ci-time">3h</span></div><div class="ci-prev">Invoice received, thanks ✓</div><div class="ci-bot"><span class="tag tag-done">Closed</span></div></div></div>
+            <div class="ci" onclick="selConvo(this)"><div class="ci-av" style="background:linear-gradient(135deg,#06B6D4,#0284C7)">DK</div><div class="ci-meta"><div class="ci-top"><span class="ci-name">Deepika K.</span><span class="ci-time">5h</span></div><div class="ci-prev">Property brochure bhej do</div><div class="ci-bot"><span class="tag tag-new">New</span><span class="unread">2</span></div></div></div>
+          </div>
+        </div>
+        <div class="chat">
+          <div class="chat-hdr">
+            <div class="chat-hdr-av" style="background:linear-gradient(135deg,#3B6CF4,#7B5EA7)">AM</div>
+            <div class="chat-hdr-info"><div class="chat-hdr-name">Amit Mehta</div><div class="chat-hdr-sub">+91 98200 12345 · Last seen 2m ago · <span style="color:var(--green)">Open window ⏱ 22h left</span></div></div>
+            <div class="chat-hdr-acts">
+              <div class="ico-btn" title="UPI Payment">💳</div>
+              <div class="ico-btn" title="Notes">📝</div>
+              <div class="ico-btn" title="Assign">👤</div>
+              <div class="ico-btn" title="More">⋯</div>
+            </div>
+          </div>
+          <div class="messages">
+            <div class="date-div">Today</div>
+            <div class="msg in"><div class="msg-bubble">Bhai, 2BHK dhundh raha hoon Thane mein. Budget around 85L hai. Kuch options hain?</div><div class="msg-meta">10:32 AM</div></div>
+            <div class="msg out"><div class="msg-bubble">Namaste Amit bhai! 🙏 Bilkul — Thane mein bahut acche options hain 85L mein. Ready possession chahiye ya under-construction?</div><div class="msg-meta">10:34 AM ✓✓</div></div>
+            <div class="msg in"><div class="msg-bubble">Ready possession. Near station bhi ho toh acha hai.</div><div class="msg-meta">10:35 AM</div></div>
+            <div class="msg out"><div class="msg-bubble">Perfect! Thane station se 10 min mein 3 properties hain — Hiranandani Estate, Majiwada, Kolshet. Sab ready to move. PDF bhejun?</div><div class="msg-meta">10:36 AM ✓✓</div></div>
+            <div class="msg in"><div class="msg-bubble">Haan bhejo! Floor plan bhi chahiye 2BHK ka.</div><div class="msg-meta">10:58 AM</div></div>
+          </div>
+          <div class="ai-strip">
+            <span>🤖</span>
+            <div class="ai-strip-txt"><strong>AI suggests:</strong> "Amit bhai, yeh raha PDF 📎 aur 3 options ka comparison. Kab free ho site visit ke liye — weekend chalega?"</div>
+            <div class="ai-use" onclick="useAI()">Use →</div>
+          </div>
+          <div class="chat-footer">
+            <div class="chat-tools"><span class="tool" title="Templates">⚡</span><span class="tool" title="Attach">📎</span><span class="tool" title="Payment link">💳</span><span class="tool" title="Catalogue">🛍️</span><span class="tool" title="Emoji">😊</span></div>
+            <div class="chat-input-row"><textarea class="chat-input" id="chat-in" placeholder="Type a message… or ⚡ for templates" rows="1"></textarea><button class="send-btn">➤</button></div>
+          </div>
+        </div>
+        <div class="cs">
+          <div class="cs-sec">
+            <div class="cs-sec-title">Contact Info</div>
+            <div class="cs-field"><div class="cs-label">Phone</div><div class="cs-val">+91 98200 12345</div></div>
+            <div class="cs-field"><div class="cs-label">Source</div><div class="cs-val">Facebook Ad → CTWA</div></div>
+            <div class="cs-field"><div class="cs-label">Location</div><div class="cs-val">Thane, Mumbai</div></div>
+            <div class="cs-field"><div class="cs-label">Stage</div><div><span class="stage-pill s-qualified">Qualified</span></div></div>
+            <div class="cs-field"><div class="cs-label">Tags</div><div class="cs-tags"><span class="cs-tag">buyer</span><span class="cs-tag">2BHK</span><span class="cs-tag">thane</span><span class="cs-tag">hot</span></div></div>
+          </div>
+          <div class="cs-sec">
+            <div class="cs-sec-title">Assigned To</div>
+            <div style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--rs);background:var(--surface2);cursor:pointer">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div>
+              <div style="font-size:12px;font-weight:600">Rajan (You)</div>
+              <div style="margin-left:auto;font-size:10px;color:var(--text3)">Change</div>
+            </div>
+          </div>
+          <div class="cs-sec">
+            <div class="cs-sec-title">FAS Score</div>
+            <div class="fas-card">
+              <div class="fas-level"><span style="font-size:14px">🥈</span><span style="font-size:11px;font-weight:700;color:var(--amber)">Silver</span></div>
+              <div class="fas-num">72</div>
+              <div class="fas-lbl">Likely to convert — high engagement</div>
+              <div class="fas-bar"><div class="fas-fill" style="width:72%;background:linear-gradient(90deg,var(--blue),var(--amber))"></div></div>
+            </div>
+          </div>
+          <div class="cs-sec">
+            <div class="cs-sec-title">Notes</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.6">Budget 80–90L. Near station preferred. Best time: evenings. Showed strong interest in Hiranandani.</div>
+          </div>
+          <div class="cs-sec">
+            <div class="cs-sec-title">Send Payment Link</div>
+            <button class="btn btn-p" style="width:100%;padding:8px;font-size:12px">💳 Request ₹ via UPI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BROADCAST ── -->
+    <div class="screen" id="sc-broadcast">
+      <div class="topbar">
+        <div class="topbar-title">Broadcast</div>
+        <div class="topbar-right">
+          <button class="btn btn-g">📋 Templates</button>
+          <button class="btn btn-p" onclick="openModal()">+ New Campaign</button>
+        </div>
+      </div>
+      <div class="bc-wrap">
+        <div class="stats-grid">
+          <div class="stat"><div class="stat-lbl">Messages Sent</div><div class="stat-val" style="color:var(--blue-light)">12,480</div><div class="stat-chg chg-up">↑ 18% vs last month</div></div>
+          <div class="stat"><div class="stat-lbl">Avg Open Rate</div><div class="stat-val" style="color:var(--green)">84%</div><div class="stat-chg chg-up">↑ 3% industry avg: 61%</div></div>
+          <div class="stat"><div class="stat-lbl">Click Rate</div><div class="stat-val" style="color:var(--amber)">31%</div><div class="stat-chg chg-up">↑ 5% vs last month</div></div>
+          <div class="stat"><div class="stat-lbl">Meta Cost (Direct)</div><div class="stat-val" style="color:var(--text)">₹892</div><div class="stat-chg" style="color:var(--text3)">No BSP markup ✓</div></div>
+        </div>
+        <div class="sec-hdr">
+          <div class="sec-title">Campaigns</div>
+          <div class="filters"><span class="chip active">All</span><span class="chip">Live</span><span class="chip">Completed</span><span class="chip">Draft</span></div>
+        </div>
+        <div class="camp-list">
+          <div class="camp"><div class="camp-dot dot-live"></div><div class="camp-info"><div class="camp-name">Diwali Property Showcase 🪔</div><div class="camp-meta">Real Estate · 2,340 contacts · Started 2 days ago</div></div><div class="camp-metrics"><div class="camp-m"><div class="camp-mv" style="color:var(--green)">88%</div><div class="camp-ml">Opened</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--blue-light)">34%</div><div class="camp-ml">Clicked</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--amber)">47</div><div class="camp-ml">Replies</div></div></div></div>
+          <div class="camp"><div class="camp-dot dot-done"></div><div class="camp-info"><div class="camp-name">Site Visit Follow-up Reminder</div><div class="camp-meta">Real Estate · 580 contacts · Completed Oct 28</div></div><div class="camp-metrics"><div class="camp-m"><div class="camp-mv" style="color:var(--green)">79%</div><div class="camp-ml">Opened</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--blue-light)">22%</div><div class="camp-ml">Clicked</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--amber)">19</div><div class="camp-ml">Replies</div></div></div></div>
+          <div class="camp"><div class="camp-dot dot-draft"></div><div class="camp-info"><div class="camp-name">New Launch — Kolshet Heights</div><div class="camp-meta">Real Estate · 1,200 contacts · Draft · Scheduled Nov 5</div></div><div class="camp-metrics"><div class="camp-m"><div class="camp-mv" style="color:var(--text3)">—</div><div class="camp-ml">Opened</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--text3)">—</div><div class="camp-ml">Clicked</div></div><div class="camp-m"><div class="camp-mv" style="color:var(--text3)">—</div><div class="camp-ml">Replies</div></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONTACTS ── -->
+    <div class="screen" id="sc-contacts">
+      <div class="topbar"><div class="topbar-title">Contacts</div><div class="search-box"><span>🔍</span><input type="text" placeholder="Search contacts…"></div><div class="topbar-right"><button class="btn btn-g">⬆ Import CSV</button><button class="btn btn-p">+ Add Contact</button></div></div>
+      <div class="ct-wrap">
+        <div class="ct-toolbar"><span class="chip active">All (248)</span><span class="chip">🔥 Hot (18)</span><span class="chip">🏠 Buyers (94)</span><span class="chip">📞 Follow-up (31)</span><span class="chip">💎 Converted (12)</span></div>
+        <div class="ct-table-wrap">
+          <table class="ct-table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Source</th><th>Stage</th><th>FAS</th><th>Assigned</th><th>Last Active</th></tr></thead>
+            <tbody>
+              <tr><td><div class="ct-name-cell"><div class="ct-av" style="background:linear-gradient(135deg,#3B6CF4,#7B5EA7)">AM</div><div class="ct-name">Amit Mehta</div></div></td><td class="ct-ph">+91 98200 12345</td><td>Facebook CTWA</td><td><span class="tag tag-hot">Hot Lead</span></td><td><span class="fas-pill fp-hi">72</span></td><td>Rajan</td><td>2m ago</td></tr>
+              <tr><td><div class="ct-name-cell"><div class="ct-av" style="background:linear-gradient(135deg,#25D366,#1A9E4A)">PR</div><div class="ct-name">Priya Rao</div></div></td><td class="ct-ph">+91 90210 55432</td><td>Website</td><td><span class="tag tag-sup">Support</span></td><td><span class="fas-pill fp-md">48</span></td><td>Rajan</td><td>18m ago</td></tr>
+              <tr><td><div class="ct-name-cell"><div class="ct-av" style="background:linear-gradient(135deg,#FF6B6B,#C94040)">SK</div><div class="ct-name">Suresh Kumar</div></div></td><td class="ct-ph">+91 78450 23109</td><td>Referral</td><td><span class="tag tag-lead">Lead</span></td><td><span class="fas-pill fp-md">55</span></td><td>Unassigned</td><td>1h ago</td></tr>
+              <tr><td><div class="ct-name-cell"><div class="ct-av" style="background:linear-gradient(135deg,#FFBE57,#E8960A)">NJ</div><div class="ct-name">Neha Joshi</div></div></td><td class="ct-ph">+91 88001 77234</td><td>IndiaMart</td><td><span class="tag tag-lead">Lead</span></td><td><span class="fas-pill fp-lo">28</span></td><td>Rajan</td><td>2h ago</td></tr>
+              <tr><td><div class="ct-name-cell"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)">RG</div><div class="ct-name">Rohit Gupta</div></div></td><td class="ct-ph">+91 91100 44321</td><td>Cold Outreach</td><td><span class="tag tag-done">Closed</span></td><td><span class="fas-pill fp-hi">91</span></td><td>Rajan</td><td>3h ago</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PIPELINE (Lead Kanban) ── -->
+    <div class="screen" id="sc-pipeline">
+      <div class="topbar"><div class="topbar-title">Lead Pipeline</div><div class="topbar-right"><button class="btn btn-g">Filter by agent</button><button class="btn btn-p">+ Add Lead</button></div></div>
+      <div class="pipeline-wrap">
+        <div class="pipeline-board">
+          <div class="pipeline-col">
+            <div class="pipeline-col-hdr"><div class="pipeline-col-name">New Enquiry</div><div class="pipeline-col-count">8</div></div>
+            <div class="lead-card"><div class="lead-card-name">Rajesh Sharma</div><div class="lead-card-detail">🏠 3BHK · Navi Mumbai · ₹1.2Cr</div><div class="lead-card-bottom"><span class="lead-card-time">5m ago</span><div class="lead-card-agent">RS</div></div></div>
+            <div class="lead-card"><div class="lead-card-name">Kavya Nair</div><div class="lead-card-detail">🏠 2BHK · Thane · ₹75L</div><div class="lead-card-bottom"><span class="lead-card-time">22m ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#25D366,#1A9E4A)">KN</div></div></div>
+            <div class="lead-card"><div class="lead-card-name">Mohan Das</div><div class="lead-card-detail">🏠 Villa · Lonavala · ₹2.5Cr</div><div class="lead-card-bottom"><span class="lead-card-time">1h ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#FF6B6B,#C94040)">MD</div></div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-hdr"><div class="pipeline-col-name">Contacted</div><div class="pipeline-col-count">14</div></div>
+            <div class="lead-card"><div class="lead-card-name">Amit Mehta</div><div class="lead-card-detail" style="color:var(--red)">🔥 Hot · 2BHK Thane · ₹85L</div><div class="lead-card-bottom"><span class="lead-card-time">2m ago</span><div class="lead-card-agent">AM</div></div></div>
+            <div class="lead-card"><div class="lead-card-name">Sunita Patel</div><div class="lead-card-detail">🏠 2BHK · Pune · ₹60L</div><div class="lead-card-bottom"><span class="lead-card-time">3h ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#FFBE57,#E8960A)">SP</div></div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-hdr"><div class="pipeline-col-name">Site Visit Booked</div><div class="pipeline-col-count">6</div></div>
+            <div class="lead-card"><div class="lead-card-name">Deepika K.</div><div class="lead-card-detail">📅 Visit: Nov 4, 11AM</div><div class="lead-card-bottom"><span class="lead-card-time">5h ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#06B6D4,#0284C7)">DK</div></div></div>
+            <div class="lead-card"><div class="lead-card-name">Arjun Singh</div><div class="lead-card-detail">📅 Visit: Nov 6, 3PM</div><div class="lead-card-bottom"><span class="lead-card-time">1d ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)">AS</div></div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-hdr"><div class="pipeline-col-name">Negotiation</div><div class="pipeline-col-count">3</div></div>
+            <div class="lead-card"><div class="lead-card-name">Neha Joshi</div><div class="lead-card-detail">💬 Counter offer sent</div><div class="lead-card-bottom"><span class="lead-card-time">2h ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#FFBE57,#E8960A)">NJ</div></div></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-hdr"><div class="pipeline-col-name">Converted 🎉</div><div class="pipeline-col-count">2</div></div>
+            <div class="lead-card" style="border-color:var(--green)"><div class="lead-card-name">Rohit Gupta</div><div class="lead-card-detail" style="color:var(--green)">✓ Booked · ₹92L · Oct 28</div><div class="lead-card-bottom"><span class="lead-card-time">3d ago</span><div class="lead-card-agent" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)">RG</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLICK-TO-WA ADS ── -->
+    <div class="screen" id="sc-ctwa">
+      <div class="topbar"><div class="topbar-title">Click-to-WhatsApp Ads</div><div class="topbar-right"><button class="btn btn-g">Connect Meta Ads</button><button class="btn btn-p">+ Create Ad</button></div></div>
+      <div class="ctwa-wrap">
+        <div class="ctwa-hero">
+          <div style="font-size:36px">📱</div>
+          <div>
+            <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;margin-bottom:5px">Meta Ad → WhatsApp → Convo Inbox</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">Every click on your Facebook or Instagram ad opens a WhatsApp chat directly — and lands in your Convo inbox with the ad source tagged. Track every rupee from ad spend to closed deal.</div>
+          </div>
+        </div>
+        <div class="ctwa-stats">
+          <div class="stat"><div class="stat-lbl">Ad Clicks</div><div class="stat-val" style="color:var(--blue-light)">1,284</div><div class="stat-chg chg-up">↑ 22% this month</div></div>
+          <div class="stat"><div class="stat-lbl">Conversations</div><div class="stat-val" style="color:var(--green)">847</div><div class="stat-chg" style="color:var(--text2)">66% conversion</div></div>
+          <div class="stat"><div class="stat-lbl">Qualified Leads</div><div class="stat-val" style="color:var(--amber)">203</div><div class="stat-chg" style="color:var(--text2)">24% of convos</div></div>
+          <div class="stat"><div class="stat-lbl">Closed Deals</div><div class="stat-val" style="color:var(--green)">12</div><div class="stat-chg chg-up">₹1.1Cr revenue</div></div>
+          <div class="stat"><div class="stat-lbl">Avg Cost/Lead</div><div class="stat-val" style="color:var(--text)">₹284</div><div class="stat-chg chg-up">↓ 18% vs last mo</div></div>
+        </div>
+        <div class="sec-hdr"><div class="sec-title">Active Ad Campaigns</div></div>
+        <div class="ctwa-ad-list">
+          <div class="ctwa-ad"><div class="ctwa-ad-thumb">🏠</div><div class="ctwa-ad-info"><div class="ctwa-ad-name">Diwali Property Offer — Thane</div><div class="ctwa-ad-meta">Facebook · ₹500/day · Running since Oct 20 · <span style="color:var(--green)">● Live</span></div></div><div class="ctwa-funnel"><div class="ctwa-funnel-step"><div class="ctwa-funnel-val">892</div><div class="ctwa-funnel-lbl">Clicks</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--green)">581</div><div class="ctwa-funnel-lbl">Convos</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--amber)">142</div><div class="ctwa-funnel-lbl">Qualified</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--blue-light)">8</div><div class="ctwa-funnel-lbl">Closed</div></div></div></div>
+          <div class="ctwa-ad"><div class="ctwa-ad-thumb">📸</div><div class="ctwa-ad-info"><div class="ctwa-ad-name">Instagram — 2BHK Ready Possession</div><div class="ctwa-ad-meta">Instagram · ₹300/day · Running since Oct 25 · <span style="color:var(--green)">● Live</span></div></div><div class="ctwa-funnel"><div class="ctwa-funnel-step"><div class="ctwa-funnel-val">392</div><div class="ctwa-funnel-lbl">Clicks</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--green)">266</div><div class="ctwa-funnel-lbl">Convos</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--amber)">61</div><div class="ctwa-funnel-lbl">Qualified</div></div><div class="ctwa-arrow">→</div><div class="ctwa-funnel-step"><div class="ctwa-funnel-val" style="color:var(--blue-light)">4</div><div class="ctwa-funnel-lbl">Closed</div></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FLOW BUILDER ── -->
+    <div class="screen" id="sc-flows">
+      <div class="topbar"><div class="topbar-title">Flow Builder</div><div class="topbar-right"><button class="btn btn-g">My Flows (4)</button><button class="btn btn-p">+ New Flow</button></div></div>
+      <div class="flows-wrap">
+        <div class="flows-sidebar">
+          <div class="flows-sidebar-title">Triggers</div>
+          <div class="flow-node-type"><span class="flow-node-ico">💬</span>New message</div>
+          <div class="flow-node-type"><span class="flow-node-ico">🔑</span>Keyword match</div>
+          <div class="flow-node-type"><span class="flow-node-ico">📋</span>Form submit</div>
+          <div class="flow-node-type"><span class="flow-node-ico">⏰</span>Time delay</div>
+          <div class="flows-sidebar-title" style="margin-top:14px">Actions</div>
+          <div class="flow-node-type"><span class="flow-node-ico">📤</span>Send message</div>
+          <div class="flow-node-type"><span class="flow-node-ico">🤖</span>AI reply</div>
+          <div class="flow-node-type"><span class="flow-node-ico">👤</span>Assign agent</div>
+          <div class="flow-node-type"><span class="flow-node-ico">💳</span>Send payment</div>
+          <div class="flow-node-type"><span class="flow-node-ico">🏷️</span>Tag contact</div>
+          <div class="flows-sidebar-title" style="margin-top:14px">Logic</div>
+          <div class="flow-node-type"><span class="flow-node-ico">🔀</span>Condition / Split</div>
+          <div class="flow-node-type"><span class="flow-node-ico">⏳</span>Wait for reply</div>
+          <div class="flow-node-type"><span class="flow-node-ico">🔚</span>End flow</div>
+        </div>
+        <div class="flow-canvas" id="flow-canvas">
+          <div class="flow-toolbar">
+            <button class="flow-tool-btn active">Lead Qualification</button>
+            <button class="flow-tool-btn">Site Visit Booking</button>
+            <button class="flow-tool-btn">Follow-up Drip</button>
+            <button class="flow-tool-btn">+ New</button>
+          </div>
+          <svg class="flow-svg" id="flow-svg"></svg>
+          <!-- Flow nodes -->
+          <div class="fnode trigger" style="left:340px;top:80px">
+            <div class="fnode-hdr"><span class="fnode-ico">💬</span><span class="fnode-type">Trigger</span></div>
+            <div class="fnode-title">New Lead Message</div>
+            <div class="fnode-sub">When new contact messages</div>
+            <div class="fnode-dot out"></div>
+          </div>
+          <div class="fnode action" style="left:340px;top:210px">
+            <div class="fnode-hdr"><span class="fnode-ico">📤</span><span class="fnode-type">Action</span></div>
+            <div class="fnode-title">Send Welcome + Q1</div>
+            <div class="fnode-sub">"Namaste! Budget kitna hai?"</div>
+            <div class="fnode-dot in"></div>
+            <div class="fnode-dot out"></div>
+          </div>
+          <div class="fnode condition" style="left:340px;top:340px">
+            <div class="fnode-hdr"><span class="fnode-ico">🔀</span><span class="fnode-type">Condition</span></div>
+            <div class="fnode-title">Budget Check</div>
+            <div class="fnode-sub">≥ ₹50L or &lt; ₹50L</div>
+            <div class="fnode-dot in"></div>
+            <div class="fnode-dot out"></div>
+          </div>
+          <div class="fnode action" style="left:170px;top:470px">
+            <div class="fnode-hdr"><span class="fnode-ico">👤</span><span class="fnode-type">Action</span></div>
+            <div class="fnode-title">Assign Senior Agent</div>
+            <div class="fnode-sub">Hot lead → priority queue</div>
+            <div class="fnode-dot in"></div>
+          </div>
+          <div class="fnode action" style="left:510px;top:470px">
+            <div class="fnode-hdr"><span class="fnode-ico">🤖</span><span class="fnode-type">Action</span></div>
+            <div class="fnode-title">AI Nurture Sequence</div>
+            <div class="fnode-sub">3-day drip, lower budget</div>
+            <div class="fnode-dot in"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FAS DASHBOARD ── -->
+    <div class="screen" id="sc-fas">
+      <div class="topbar"><div class="topbar-title">Feature Adoption Score</div><div class="topbar-right"><button class="btn btn-g">Last 30 days ⌄</button></div></div>
+      <div class="fas-wrap">
+        <div class="fas-hero">
+          <div class="fas-hero-score">
+            <div class="fas-big-num">42</div>
+            <div class="fas-hero-level">🥈 Silver Level</div>
+            <div class="fas-hero-bar"><div class="fas-hero-fill" style="width:42%"></div></div>
+          </div>
+          <div class="fas-hero-info">
+            <div class="fas-hero-title">You're using 6 of 14 features</div>
+            <div class="fas-hero-sub">Businesses at your stage that reach Gold see <strong>4x more customer replies</strong> and <strong>2.8x higher revenue</strong>. You're 3 features away from Gold.<br><br>Unlocking AI Auto-reply alone could recover an estimated <strong style="color:var(--green)">₹28,000/month</strong> in unqualified leads.</div>
+            <div class="fas-levels">
+              <div class="fas-level-item done">🥉 Bronze</div>
+              <div class="fas-level-item current">🥈 Silver</div>
+              <div class="fas-level-item">🥇 Gold</div>
+              <div class="fas-level-item">💎 Platinum</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px"><div class="sec-title" style="font-family:'Sora',sans-serif;font-size:15px;font-weight:600">Your 14 Features</div><div style="font-size:12px;color:var(--text2);margin-top:3px">Click any inactive feature to activate it</div></div>
+        <div class="fas-features">
+          <div class="fas-feat active"><div class="fas-feat-ico">💬</div><div class="fas-feat-name">Shared Inbox</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · Foundation feature</div></div>
+          <div class="fas-feat active"><div class="fas-feat-ico">📣</div><div class="fas-feat-name">Broadcast</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · 6 campaigns sent</div></div>
+          <div class="fas-feat active"><div class="fas-feat-ico">👥</div><div class="fas-feat-name">Contact Management</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · 248 contacts</div></div>
+          <div class="fas-feat active"><div class="fas-feat-ico">🏠</div><div class="fas-feat-name">Industry Playbook</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · Real Estate</div></div>
+          <div class="fas-feat active"><div class="fas-feat-ico">📊</div><div class="fas-feat-name">Pipeline View</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · 33 leads tracked</div></div>
+          <div class="fas-feat active"><div class="fas-feat-ico">📱</div><div class="fas-feat-name">CTWA Ads</div><div class="fas-feat-impact" style="color:var(--green)">✓ Active · 2 ads running</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">🤖</div><div class="fas-feat-name">AI Auto-Reply</div><div class="fas-feat-impact">Est. ₹28,000/mo recovered</div><div class="fas-feat-cta">Activate →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">⚡</div><div class="fas-feat-name">Flow Builder</div><div class="fas-feat-impact">Save 4hrs/week on manual replies</div><div class="fas-feat-cta">Build first flow →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">💳</div><div class="fas-feat-name">UPI Payment Links</div><div class="fas-feat-impact">Collect payments in-chat</div><div class="fas-feat-cta">Enable →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">🎯</div><div class="fas-feat-name">AI Lead Qualifier</div><div class="fas-feat-impact">Qualify 60% of leads automatically</div><div class="fas-feat-cta">Enable →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">📈</div><div class="fas-feat-name">Campaign Analytics</div><div class="fas-feat-impact">Know which campaigns convert</div><div class="fas-feat-cta">Enable →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">🛍️</div><div class="fas-feat-name">Product Catalogue</div><div class="fas-feat-impact">Browse & buy inside WhatsApp</div><div class="fas-feat-cta">Add products →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">📱</div><div class="fas-feat-name">WhatsApp Flows</div><div class="fas-feat-impact">In-chat forms & booking flows</div><div class="fas-feat-cta">Create flow →</div></div>
+          <div class="fas-feat" onclick="this.classList.add('active')"><div class="fas-feat-ico">👔</div><div class="fas-feat-name">Agent Dashboard</div><div class="fas-feat-impact">Measure team performance</div><div class="fas-feat-cta">Enable →</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="screen" id="sc-analytics">
+      <div class="topbar"><div class="topbar-title">Analytics</div><div class="topbar-right"><button class="btn btn-g">Last 30 days ⌄</button><button class="btn btn-g">Export</button></div></div>
+      <div class="an-wrap">
+        <div class="stats-grid" style="margin-bottom:16px">
+          <div class="stat"><div class="stat-lbl">Total Conversations</div><div class="stat-val">1,284</div><div class="stat-chg chg-up">↑ 24% this month</div></div>
+          <div class="stat"><div class="stat-lbl">Avg Response Time</div><div class="stat-val" style="color:var(--blue-light)">4.2m</div><div class="stat-chg chg-up">↓ 40% improved</div></div>
+          <div class="stat"><div class="stat-lbl">Resolution Rate</div><div class="stat-val" style="color:var(--green)">78%</div><div class="stat-chg chg-up">↑ 6% this month</div></div>
+          <div class="stat"><div class="stat-lbl">Revenue Attributed</div><div class="stat-val" style="color:var(--amber)">₹1.1Cr</div><div class="stat-chg chg-up">via CTWA + payments</div></div>
+        </div>
+        <div class="an-grid">
+          <div class="chart-card">
+            <div class="chart-title">Message Volume</div>
+            <div class="chart-sub">Inbound vs outbound — last 7 days</div>
+            <div class="bars" id="bars"></div>
+            <div style="display:flex;gap:14px;margin-top:10px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:9px;height:9px;border-radius:2px;background:var(--blue)"></div>Outbound</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:9px;height:9px;border-radius:2px;background:var(--green)"></div>Inbound</div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Lead Sources</div>
+            <div class="chart-sub">Where your contacts come from</div>
+            <div class="donut-wrap">
+              <svg width="120" height="120" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#1E2535" stroke-width="4"/>
+                <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#3B6CF4" stroke-width="4" stroke-dasharray="42 58" stroke-dashoffset="25"/>
+                <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#25D366" stroke-width="4" stroke-dasharray="28 72" stroke-dashoffset="-17"/>
+                <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#FFBE57" stroke-width="4" stroke-dasharray="18 82" stroke-dashoffset="-45"/>
+                <circle cx="21" cy="21" r="15.9" fill="transparent" stroke="#FF6B6B" stroke-width="4" stroke-dasharray="12 88" stroke-dashoffset="-63"/>
+              </svg>
+              <div class="donut-legend">
+                <div class="donut-item"><div class="donut-dot" style="background:#3B6CF4"></div><div class="donut-lbl">CTWA Ads</div><div class="donut-val">42%</div></div>
+                <div class="donut-item"><div class="donut-dot" style="background:#25D366"></div><div class="donut-lbl">Referral</div><div class="donut-val">28%</div></div>
+                <div class="donut-item"><div class="donut-dot" style="background:#FFBE57"></div><div class="donut-lbl">IndiaMart</div><div class="donut-val">18%</div></div>
+                <div class="donut-item"><div class="donut-dot" style="background:#FF6B6B"></div><div class="donut-lbl">Cold Outreach</div><div class="donut-val">12%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLAYBOOKS ── -->
+    <div class="screen" id="sc-playbooks">
+      <div class="topbar"><div class="topbar-title">Playbooks</div><div class="topbar-right"><button class="btn btn-g">+ Custom Flow</button></div></div>
+      <div class="pb-wrap">
+        <div class="sec-hdr"><div><div class="sec-title">Industry Playbooks</div><div style="font-size:12px;color:var(--text2);margin-top:3px">One-click activation — pre-built flows for your industry</div></div></div>
+        <div class="pb-grid">
+          <div class="pb-card active-pb"><div class="pb-ico">🏠</div><div class="pb-name">Real Estate</div><div class="pb-desc">Lead qualification, site visit scheduling, EMI reminders, follow-up sequences — built for Indian brokers.</div><div class="pb-tags"><span class="pb-tag">Lead capture</span><span class="pb-tag">Site visit</span><span class="pb-tag">Follow-up</span><span class="pb-tag">Closing</span></div><button class="btn btn-g" style="font-size:11px;padding:5px 11px">Edit flows</button></div>
+          <div class="pb-card"><div class="pb-ico">📦</div><div class="pb-name">D2C / E-commerce</div><div class="pb-desc">Abandoned cart recovery, order confirmation, COD verification, return flows, re-engagement.</div><div class="pb-tags"><span class="pb-tag">Order alerts</span><span class="pb-tag">COD verify</span><span class="pb-tag">Returns</span><span class="pb-tag">Reactivation</span></div><button class="btn btn-p" style="font-size:11px;padding:5px 11px" onclick="activatePB(this)">Activate</button></div>
+          <div class="pb-card"><div class="pb-ico">🎓</div><div class="pb-name">Education</div><div class="pb-desc">Admissions enquiry, demo class booking, fee reminders, parent updates — for coaching institutes.</div><div class="pb-tags"><span class="pb-tag">Admissions</span><span class="pb-tag">Demo class</span><span class="pb-tag">Fee reminder</span></div><button class="btn btn-p" style="font-size:11px;padding:5px 11px" onclick="activatePB(this)">Activate</button></div>
+        </div>
+        <div class="sec-hdr" style="margin-top:8px"><div class="sec-title">Active Automations</div></div>
+        <div class="auto-item"><div class="auto-ico">👋</div><div class="auto-info"><div class="auto-name">Welcome Message</div><div class="auto-desc">Auto-send when new lead messages for the first time</div></div><div class="toggle on" onclick="tog(this)"><div class="toggle-k"></div></div></div>
+        <div class="auto-item"><div class="auto-ico">⏰</div><div class="auto-info"><div class="auto-name">Follow-up Reminder</div><div class="auto-desc">Remind agent if lead hasn't been replied to in 2 hours</div></div><div class="toggle on" onclick="tog(this)"><div class="toggle-k"></div></div></div>
+        <div class="auto-item"><div class="auto-ico">🤖</div><div class="auto-info"><div class="auto-name">AI Auto-reply (Out of hours)</div><div class="auto-desc">AI answers FAQs from 10PM–9AM in Hinglish</div></div><div class="toggle on" onclick="tog(this)"><div class="toggle-k"></div></div></div>
+        <div class="auto-item"><div class="auto-ico">📍</div><div class="auto-info"><div class="auto-name">Site Visit Confirmation</div><div class="auto-desc">Send location + reminder 1hr before scheduled visit</div></div><div class="toggle off" onclick="tog(this)"><div class="toggle-k"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="screen" id="sc-settings">
+      <div class="topbar"><div class="topbar-title">Settings</div></div>
+      <div class="set-wrap">
+        <div class="set-sb">
+          <div class="set-ni active">WhatsApp</div>
+          <div class="set-ni">Team & Agents</div>
+          <div class="set-ni">Billing & Plans</div>
+          <div class="set-ni">Notifications</div>
+          <div class="set-ni">Integrations</div>
+          <div class="set-ni">DPDP Compliance</div>
+          <div class="set-ni">API & Webhooks</div>
+        </div>
+        <div class="set-content">
+          <div class="set-sec">
+            <div class="set-sec-title">WhatsApp Connection</div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">Connected Number</div><div class="set-row-desc">+91 98765 00001 — Rajan's Team</div></div><div class="wa-badge"><div class="wa-badge-dot"></div>Connected</div></div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">API Method</div><div class="set-row-desc">Meta Cloud API — Direct. No BSP middleman. No markup.</div></div><div class="wa-badge"><div class="wa-badge-dot"></div>Direct API</div></div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">Business Display Name</div><div class="set-row-desc">Rajan Real Estate — verified by Meta</div></div><button class="btn btn-g" style="font-size:11px">Edit</button></div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">Green Tick Verification</div><div class="set-row-desc">Apply for verified business badge — available on Growth plan</div></div><button class="btn btn-p" style="font-size:11px">Apply</button></div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">Business Profile</div><div class="set-row-desc">Business hours, description, address, website — shown to all WhatsApp users</div></div><button class="btn btn-g" style="font-size:11px">Edit Profile</button></div>
+            <div class="set-row"><div class="set-row-info"><div class="set-row-label">Webhook URL</div><div class="set-row-desc">https://api.convo.in/webhook/abc123xyz — for Meta Cloud API callbacks</div></div><button class="btn btn-g" style="font-size:11px">Copy</button></div>
+          </div>
+          <div class="set-sec">
+            <div class="set-sec-title">Billing & Plan</div>
+            <div class="plan-grid">
+              <div class="plan-card"><div class="plan-name">Starter</div><div class="plan-price">₹999<span>/mo</span></div><div class="plan-feats"><div class="plan-feat">1 WhatsApp number</div><div class="plan-feat">3 agents</div><div class="plan-feat">Basic playbooks</div><div class="plan-feat">Broadcast + inbox</div><div class="plan-feat">WhatsApp support</div></div></div>
+              <div class="plan-card curr"><div class="plan-name">Growth ⭐</div><div class="plan-price">₹2,499<span>/mo</span></div><div class="plan-feats"><div class="plan-feat">3 WhatsApp numbers</div><div class="plan-feat">Up to 10 agents</div><div class="plan-feat">AI auto-reply + qualifier</div><div class="plan-feat">All playbooks + flows</div><div class="plan-feat">FAS dashboard</div><div class="plan-feat">CTWA ads + UPI payments</div><div class="plan-feat">Dedicated onboarding specialist</div></div></div>
+              <div class="plan-card"><div class="plan-name">Scale</div><div class="plan-price">₹5,999<span>/mo</span></div><div class="plan-feats"><div class="plan-feat">Unlimited numbers</div><div class="plan-feat">Up to 30 agents</div><div class="plan-feat">Full AI suite</div><div class="plan-feat">Advanced analytics</div><div class="plan-feat">DPDP compliance tools</div><div class="plan-feat">99.9% uptime SLA</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Campaign Builder Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="position:relative">
+    <div class="modal-title">New Campaign</div>
+    <div class="modal-sub">Set up a new WhatsApp broadcast in 4 steps</div>
+    <div class="modal-steps">
+      <div class="m-step active">1. Name & Goal</div>
+      <div class="m-step">2. Template</div>
+      <div class="m-step">3. Audience</div>
+      <div class="m-step">4. Schedule & Send</div>
+    </div>
+    <div class="form-group"><label class="form-label">Campaign Name</label><input class="form-input" placeholder="e.g. Diwali Property Offer"></div>
+    <div class="form-group"><label class="form-label">Goal</label><select class="form-select"><option>Generate leads / replies</option><option>Drive site visits</option><option>Collect payments</option><option>Share information</option></select></div>
+    <div class="form-group"><label class="form-label">Choose Template</label>
+      <div class="template-grid">
+        <div class="template-card sel"><div class="template-card-name">🏠 Lead Follow-up</div><div class="template-card-prev">Namaste! Aapka property enquiry mila. Kya hum call kar sakte hain?</div></div>
+        <div class="template-card"><div class="template-card-name">🪔 Diwali Offer</div><div class="template-card-prev">Diwali special: 2BHK flats at ₹79L. Limited period only. Book site visit today!</div></div>
+        <div class="template-card"><div class="template-card-name">📅 Site Visit Reminder</div><div class="template-card-prev">Your site visit is scheduled for tomorrow at 11AM. Here's the location 📍</div></div>
+        <div class="template-card"><div class="template-card-name">💬 Re-engagement</div><div class="template-card-prev">Bhai, aapne last month property enquiry ki thi. Kya aap abhi bhi market mein hain?</div></div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Audience</label>
+      <div class="seg-chips">
+        <div class="seg-chip sel">All contacts (248)</div>
+        <div class="seg-chip">Hot leads only (18)</div>
+        <div class="seg-chip">Needs follow-up (31)</div>
+        <div class="seg-chip">Buyers (94)</div>
+        <div class="seg-chip">Custom segment</div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Preview</label>
+      <div class="camp-preview">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">WhatsApp preview — as seen by recipient</div>
+        <div class="wa-preview">Namaste Amit! 🙏 Aapka property enquiry mila. Kya hum aaj call kar sakte hain? Hamare paas Thane mein 2BHK ke kuch acche options hain aapke budget mein.<div class="wa-preview-meta">11:00 AM ✓✓</div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-g" onclick="closeModal()">Cancel</button><button class="btn btn-p">Schedule Campaign →</button></div>
+  </div>
+</div>
+
+<script>
+// ─── ONBOARDING ───
+let ans={}, step=1;
+const indNames={realestate:'Real Estate',d2c:'D2C',education:'Education',healthcare:'Healthcare',fnb:'F&B',other:'Business'};
+const goalLabels={sales:'lead-qualification',marketing:'broadcast campaign',support:'auto-reply',commerce:'payment link',all:'full platform'};
+
+function showSwitcherPicker(){document.getElementById('switcher-picker').style.display='block'}
+function setSwitcher(el,val){document.querySelectorAll('#switcher-picker .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');ans['switcher']=val;document.getElementById('switcher-sub').textContent='Switching from '+el.textContent+' — free migration included'}
+function updDots(){for(let i=1;i<=4;i++){const d=document.getElementById('d'+i);d.className='ob-dot';if(i<step)d.classList.add('done');else if(i===step)d.classList.add('active')}}
+function showStep(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('on'));const s=document.getElementById('s'+n);if(s)s.classList.add('on');step=n;updDots()}
+function pick(el,n){el.closest('.ob-opts').querySelectorAll('.ob-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');ans['s'+n]=el.dataset.v;const nb=document.getElementById('n'+n);if(nb)nb.classList.add('on')}
+function next(n){if(!ans['s'+n])return;if(n<4)showStep(n+1)}
+function back(n){if(n>1)showStep(n-1)}
+
+function startLoad(){
+  if(!ans['s4'])return;
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('on'));
+  const l=document.getElementById('ob-load');l.classList.add('on');
+  const ind=ans['s1'],goal=ans['s2'],isSwitcher=ans['s4']==='switcher';
+  document.getElementById('ls1-txt').textContent=`Activating ${indNames[ind]||'industry'} playbook`;
+  document.getElementById('ls2-txt').textContent=`Loading ${goalLabels[goal]||'first-win'} templates`;
+  const sw = ans['switcher']||'previous tool';
+  const swLabel = sw.charAt(0).toUpperCase()+sw.slice(1);
+  document.getElementById('ls3-txt').textContent=isSwitcher?`Preparing your migration from ${swLabel}`:'Configuring AI tone for your team';
+  ['ls1','ls2','ls3','ls4'].forEach((id,i)=>{
+    setTimeout(()=>{const e=document.getElementById(id);e.classList.add('show');setTimeout(()=>e.classList.add('done'),350)},600+i*850);
+  });
+  setTimeout(showCoach,600+4*850+500);
+}
+
+function showCoach(){
+  document.getElementById('ob-load').classList.remove('on');
+  // Adapt coach based on Q2 goal
+  const goal=ans['s2'];
+  const coaches={
+    sales:{title:'Your first win: qualify 47 waiting leads 🚀',msg:'You have <strong style="color:var(--text)">47 uncontacted leads</strong> from last week. Here\'s how to reach all of them in the next 5 minutes.',step1:'Send your first broadcast',desc1:'A lead follow-up template is ready. Review and send to 47 contacts in one click.'},
+    marketing:{title:'Your first win: send your first campaign 🚀',msg:'A <strong style="color:var(--text)">Diwali offer template</strong> is ready to go. Reach 248 contacts in 2 minutes.',step1:'Launch your first campaign',desc1:'Review the pre-filled template and hit send. Watch the replies come in.'},
+    support:{title:'Your first win: activate AI auto-reply 🚀',msg:'Set up <strong style="color:var(--text)">AI to handle 70% of inbound queries</strong> automatically — starting right now.',step1:'Activate AI auto-reply',desc1:'AI will respond to common questions in Hinglish, freeing your team for complex issues.'},
+    commerce:{title:'Your first win: send a payment link 🚀',msg:'Collect your first payment <strong style="color:var(--text)">inside WhatsApp</strong>. No redirect, no friction.',step1:'Send your first UPI payment link',desc1:'Pick a contact, enter amount, and send. Payment confirmation is automatic.'},
+    all:{title:'Your first win: activate your full WhatsApp OS 🚀',msg:'We\'ve turned on Sales, Marketing, Support, and Commerce. Start with <strong style="color:var(--text)">47 uncontacted leads</strong> from last week.',step1:'Send your first broadcast',desc1:'A lead follow-up template is ready. Review and send to 47 contacts in one click.'}
+  };
+  const c=coaches[goal]||coaches.sales;
+  document.querySelector('.coach-title').textContent=c.title;
+  document.querySelector('.coach-header div:last-child').innerHTML=c.msg;
+  document.getElementById('cs1').querySelector('.coach-step-title').textContent=c.step1;
+  document.getElementById('cs1').querySelector('.coach-step-desc').textContent=c.desc1;
+  document.getElementById('ob-coach').classList.add('on');
+}
+
+function goAppFromCoach(){
+  const ob = document.getElementById('ob');
+  ob.style.transition='opacity 0.45s ease';
+  ob.style.opacity='0';
+  setTimeout(()=>{ob.style.display='none';document.getElementById('app').classList.add('on')},450);
+}
+
+// ─── APP ───
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-'+name).classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+}
+function selConvo(el){document.querySelectorAll('.ci').forEach(c=>c.classList.remove('active'));el.classList.add('active')}
+function useAI(){const inp=document.getElementById('chat-in');inp.value="Amit bhai, yeh raha PDF 📎 aur 3 options ka comparison. Kab free ho site visit ke liye — weekend chalega?";inp.focus()}
+function tog(el){el.classList.toggle('on');el.classList.toggle('off')}
+function activatePB(btn){const c=btn.closest('.pb-card');c.classList.add('active-pb');btn.textContent='Activated ✓';btn.className='btn btn-g';btn.style.fontSize='11px';btn.disabled=true}
+function openModal(){document.getElementById('modal').classList.add('on')}
+function closeModal(){document.getElementById('modal').classList.remove('on')}
+
+// ─── CHART ───
+function buildChart(){
+  const data=[{d:'Mon',o:82,i:54},{d:'Tue',o:95,i:67},{d:'Wed',o:71,i:48},{d:'Thu',o:110,i:78},{d:'Fri',o:138,i:92},{d:'Sat',o:64,i:41},{d:'Sun',o:49,i:33}];
+  const max=Math.max(...data.map(d=>d.o+d.i));
+  const c=document.getElementById('bars');if(!c)return;
+  data.forEach(d=>{
+    const w=document.createElement('div');w.className='bar-wrap';
+    const oh=Math.round(d.o/max*100),ih=Math.round(d.i/max*100);
+    w.innerHTML=`<div style="display:flex;align-items:flex-end;gap:2px;height:100%;justify-content:center"><div class="bar" style="height:${oh}%;background:var(--blue);flex:1" title="${d.o}"></div><div class="bar" style="height:${ih}%;background:var(--green);flex:1" title="${d.i}"></div></div><div class="bar-lbl">${d.d}</div>`;
+    c.appendChild(w);
+  });
+}
+
+// ─── INIT ───
+showStep(1);updDots();buildChart();
+</script>
+</body>
+</html>
+
