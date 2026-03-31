@@ -1,0 +1,16 @@
+{
+  "name": "convo",
+  "private": true,
+  "scripts": {
+    "dev:web": "cd web && npm run dev",
+    "dev:api": "wrangler dev workers/api.ts --local",
+    "seed:local": "wrangler d1 execute convo-production --local --file=scripts/seed-local-d1.sql"
+  },
+  "dependencies": {
+    "hono": "^4.12.0",
+    "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250610.0"
+  }
+}

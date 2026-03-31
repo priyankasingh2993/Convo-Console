@@ -1,0 +1,29 @@
+{
+  "name": "convo-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^7.0.1",
+    "@cloudflare/workers-types": "^4.20260305.1",
+    "@opennextjs/cloudflare": "^1.17.1",
+    "hono": "^4.12.5",
+    "jose": "^6.2.0",
+    "next": "15.2.8",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.8",
+    "typescript": "^5"
+  }
+}

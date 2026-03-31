@@ -1,0 +1,35 @@
+name = "convo-api"
+main = "workers/api.ts"
+compatibility_date = "2025-03-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Get database_id from: npx wrangler d1 create convo-production (or use existing)
+[[d1_databases]]
+binding = "DB"
+database_name = "convo-production"
+database_id = "PASTE_YOUR_D1_ID_HERE"
+
+# Get id from: npx wrangler kv namespace create "convo-kv"
+[[kv_namespaces]]
+binding = "KV"
+id = "PASTE_YOUR_KV_ID_HERE"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "convo-media"
+
+[durable_objects]
+bindings = [
+  { name = "INBOX", class_name = "InboxConnection" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["InboxConnection"]
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[vars]
+ENVIRONMENT = "development"
+
